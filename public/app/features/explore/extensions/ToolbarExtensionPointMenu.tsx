@@ -6,12 +6,21 @@ import { truncateTitle } from 'app/features/plugins/extensions/utils';
 
 type Props = {
   extensions: PluginExtensionLink[];
+  isLoadingExtensions: boolean;
   onSelect: (extension: PluginExtensionLink) => void;
 };
 
-export function ToolbarExtensionPointMenu({ extensions, onSelect }: Props): ReactElement | null {
+export function ToolbarExtensionPointMenu({ extensions, isLoadingExtensions, onSelect }: Props): ReactElement | null {
   const { categorised, uncategorised } = useExtensionLinksByCategory(extensions);
   const showDivider = uncategorised.length > 0 && Object.keys(categorised).length > 0;
+
+  if (isLoadingExtensions) {
+    return (
+      <Menu>
+        <Menu.Item ariaLabel="Loading extensions..." icon="spinner" key="loading" label="Loading extensions..." />
+      </Menu>
+    );
+  }
 
   return (
     <Menu>

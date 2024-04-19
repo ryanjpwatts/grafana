@@ -1,4 +1,4 @@
-import React, { lazy, ReactElement, Suspense, useMemo, useState } from 'react';
+import React, { lazy, ReactElement, Suspense, useEffect, useMemo, useState } from 'react';
 
 import { type PluginExtensionLink, PluginExtensionPoints, RawTimeRange, getTimeZone } from '@grafana/data';
 import { config, usePluginLinkExtensions } from '@grafana/runtime';
@@ -26,17 +26,23 @@ export function ToolbarExtensionPoint(props: Props): ReactElement | null {
   const [selectedExtension, setSelectedExtension] = useState<PluginExtensionLink | undefined>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const context = useExtensionPointContext(props);
-  const { extensions } = usePluginLinkExtensions({
+  const { extensions, isLoading: isLoadingExtensions } = usePluginLinkExtensions({
     extensionPointId: PluginExtensionPoints.ExploreToolbarAction,
     context: context,
     limitPerPlugin: 3,
   });
+  console.log('////// TOOLBAR', { extensions, isLoadingExtensions });
+
+  useEffect(() => {
+    console.log('EXTENSIONS UPDATED', isLoadingExtensions);
+  }, [isLoadingExtensions]);
+
   const selectExploreItem = getExploreItemSelector(exploreId);
   const noQueriesInPane = useSelector(selectExploreItem)?.queries?.length;
 
   // If we only have the explore core extension point registered we show the old way of
   // adding a query to a dashboard.
-  if (extensions.length <= 1) {
+  if (extensions.length <= 1 && !isLoadingExtensions) {
     const canAddPanelToDashboard =
       contextSrv.hasPermission(AccessControlAction.DashboardsCreate) ||
       contextSrv.hasPermission(AccessControlAction.DashboardsWrite);
@@ -52,7 +58,13 @@ export function ToolbarExtensionPoint(props: Props): ReactElement | null {
     );
   }
 
-  const menu = <ToolbarExtensionPointMenu extensions={extensions} onSelect={setSelectedExtension} />;
+  const menu = (
+    <ToolbarExtensionPointMenu
+      extensions={extensions}
+      isLoadingExtensions={isLoadingExtensions}
+      onSelect={setSelectedExtension}
+    />
+  );
 
   return (
     <>

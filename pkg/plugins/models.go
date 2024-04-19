@@ -45,6 +45,17 @@ type Dependencies struct {
 	Plugins           []Dependency `json:"plugins"`
 }
 
+type Extension struct {
+	ExtensionPointId string `json:"extensionPointId"`
+	Title            string `json:"title"`
+	Description      string `json:"description"`
+	Type             string `json:"type"`
+}
+
+type Generated struct {
+	Extensions []Extension `json:"extensions"`
+}
+
 type Includes struct {
 	Name       string       `json:"name"`
 	Path       string       `json:"path"`
@@ -226,10 +237,11 @@ type PanelDTO struct {
 }
 
 type AppDTO struct {
-	ID      string `json:"id"`
-	Path    string `json:"path"`
-	Version string `json:"version"`
-	Preload bool   `json:"preload"`
+	ID         string      `json:"id"`
+	Path       string      `json:"path"`
+	Version    string      `json:"version"`
+	Preload    bool        `json:"preload"`
+	Extensions []Extension `json:"extensions"`
 
 	Angular AngularMeta `json:"angular"`
 }

@@ -27,6 +27,8 @@ export function usePluginLinkExtensions(
 ): UsePluginExtensionsResult<PluginExtensionLink> {
   const { extensions, isLoading } = usePluginExtensions(options);
 
+  console.log('-----> ISLOADING', isLoading);
+
   return useMemo(() => {
     return {
       extensions: extensions.filter(isPluginExtensionLink),

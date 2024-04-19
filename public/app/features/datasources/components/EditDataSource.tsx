@@ -142,7 +142,11 @@ export function EditDataSourceView({
   }>({ extensionPointId });
 
   const allowedExtensions = useMemo(() => {
-    const allowedPluginIds = ['grafana-pdc-app', 'grafana-auth-app'];
+    const allowedPluginIds = [
+      'grafana-pdc-app',
+      'grafana-auth-app',
+      /* REMOVE BEFORE MERGE ----> */ 'grafana-extensions-app' /* <----- REMOVE BEFORE MERGE */,
+    ];
     return extensions.filter((e) => allowedPluginIds.includes(e.pluginId));
   }, [extensions]);
 

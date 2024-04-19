@@ -219,10 +219,8 @@ export class GrafanaApp {
         // TODO: remove the following exception once the issue mentioned above is fixed.
         const awaitedAppPluginIds = ['cloud-home-app'];
         const awaitedAppPlugins = Object.values(config.apps).filter((app) => awaitedAppPluginIds.includes(app.id));
-        const appPlugins = Object.values(config.apps).filter((app) => !awaitedAppPluginIds.includes(app.id));
 
-        preloadPlugins(appPlugins, extensionsRegistry);
-        await preloadPlugins(awaitedAppPlugins, extensionsRegistry, 'frontend_awaited_plugins_preload');
+        await preloadPlugins(awaitedAppPlugins, extensionsRegistry);
       }
 
       setPluginExtensionGetter(createPluginExtensionsGetter(extensionsRegistry));
