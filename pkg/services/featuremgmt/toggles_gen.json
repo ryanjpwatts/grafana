@@ -822,12 +822,15 @@
     {
       "metadata": {
         "name": "logsInfiniteScrolling",
-        "resourceVersion": "1713545444177",
-        "creationTimestamp": "2024-04-19T16:50:44Z"
+        "resourceVersion": "1715158599861",
+        "creationTimestamp": "2024-04-19T16:50:44Z",
+        "annotations": {
+          "grafana.app/updatedTimestamp": "2024-05-08 08:56:39.861508 +0000 UTC"
+        }
       },
       "spec": {
         "description": "Enables infinite scrolling for the Logs panel in Explore and Dashboards",
-        "stage": "experimental",
+        "stage": "GA",
         "codeowner": "@grafana/observability-logs",
         "frontend": true
       }
