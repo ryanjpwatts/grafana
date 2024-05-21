@@ -56,7 +56,7 @@ function resultsToRegistry(registry: PluginExtensionRegistry, result: PluginPrel
 
     // Change the extensionPointId for capabilities
     if (isPluginCapability(extensionConfig)) {
-      const regex = /capabilities\/([a-zA-Z0-9_.-]+)$/;
+      const regex = /capabilities\/([a-zA-Z0-9_.\-\/]+)$/;
       const match = regex.exec(extensionPointId);
 
       if (!match) {
@@ -68,10 +68,10 @@ function resultsToRegistry(registry: PluginExtensionRegistry, result: PluginPrel
 
       const capabilityId = match[1];
 
-      extensionPointId = `capabilities/${pluginId}/${capabilityId}`;
+      extensionPointId = `capabilities/${capabilityId}`;
       extensionConfig.extensionPointId = extensionPointId;
     }
-    
+
     // Check if the config is valid
     if (!extensionConfig || !isPluginExtensionConfigValid(pluginId, extensionConfig)) {
       return registry;
