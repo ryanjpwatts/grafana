@@ -24,6 +24,7 @@ import { playlistSrv } from 'app/features/playlist/PlaylistSrv';
 
 import { PanelEditor } from '../panel-edit/PanelEditor';
 import ExportButton from '../sharing/ExportButton/ExportButton';
+import ShareButton from '../sharing/ShareButton/ShareButton';
 import { ShareModal } from '../sharing/ShareModal';
 import { DashboardInteractions } from '../utils/interactions';
 import { DynamicDashNavButtonModel, dynamicDashNavActions } from '../utils/registerDynamicDashNavAction';
@@ -55,6 +56,7 @@ export function ToolbarActions({ dashboard }: Props) {
     meta,
     editview,
     editPanel,
+    editable,
     hasCopiedPanel: copiedPanel,
   } = dashboard.useState();
   const { isPlaying } = playlistSrv.useState();
@@ -65,6 +67,7 @@ export function ToolbarActions({ dashboard }: Props) {
   const styles = useStyles2(getStyles);
   const isEditingPanel = Boolean(editPanel);
   const isViewingPanel = Boolean(viewPanelScene);
+  const isEditedPanelDirty = useVizManagerDirty(editPanel);
   const isEditingLibraryPanel = useEditingLibraryPanel(editPanel);
   const hasCopiedPanel = Boolean(copiedPanel);
   // Means we are not in settings view, fullscreen panel or edit panel
@@ -90,6 +93,7 @@ export function ToolbarActions({ dashboard }: Props) {
             <Icon name={meta.isStarred ? 'favorite' : 'star'} size="lg" type={meta.isStarred ? 'mono' : 'default'} />
           }
           key="star-dashboard-button"
+          data-testid={selectors.components.NavToolbar.markAsFavorite}
           onClick={() => {
             DashboardInteractions.toolbarFavoritesClick();
             dashboard.onStarDashboard();
@@ -275,6 +279,7 @@ export function ToolbarActions({ dashboard }: Props) {
         variant="secondary"
         size="sm"
         icon="arrow-left"
+        data-testid={selectors.components.NavToolbar.editDashboard.backToDashboardButton}
       >
         Back to dashboard
       </Button>
@@ -295,15 +300,17 @@ export function ToolbarActions({ dashboard }: Props) {
         variant="secondary"
         size="sm"
         icon="arrow-left"
+        data-testid={selectors.components.NavToolbar.editDashboard.backToDashboardButton}
       >
         Back to dashboard
       </Button>
     ),
   });
 
+  const showShareButton = uid && !isEditing && !meta.isSnapshot && !isPlaying;
   toolbarActions.push({
     group: 'main-buttons',
-    condition: uid && !isEditing && !meta.isSnapshot && !isPlaying,
+    condition: !config.featureToggles.newDashboardSharingComponent && showShareButton,
     render: () => (
       <Button
         key="share-dashboard-button"
@@ -315,6 +322,7 @@ export function ToolbarActions({ dashboard }: Props) {
           DashboardInteractions.toolbarShareClick();
           dashboard.showModal(new ShareModal({ dashboardRef: dashboard.getRef() }));
         }}
+        data-testid={selectors.components.NavToolbar.shareDashboard}
       >
         Share
       </Button>
@@ -323,7 +331,7 @@ export function ToolbarActions({ dashboard }: Props) {
 
   toolbarActions.push({
     group: 'main-buttons',
-    condition: !isEditing && dashboard.canEditDashboard() && !isViewingPanel && !isPlaying,
+    condition: !isEditing && dashboard.canEditDashboard() && !isViewingPanel && !isPlaying && editable,
     render: () => (
       <Button
         onClick={() => {
@@ -332,12 +340,40 @@ export function ToolbarActions({ dashboard }: Props) {
         tooltip="Enter edit mode"
         key="edit"
         className={styles.buttonWithExtraMargin}
-        variant="primary"
+        variant={config.featureToggles.newDashboardSharingComponent ? 'secondary' : 'primary'}
         size="sm"
+        data-testid={selectors.components.NavToolbar.editDashboard.editButton}
       >
         Edit
       </Button>
     ),
+  });
+
+  toolbarActions.push({
+    group: 'main-buttons',
+    condition: !isEditing && dashboard.canEditDashboard() && !isViewingPanel && !isPlaying && !editable,
+    render: () => (
+      <Button
+        onClick={() => {
+          dashboard.onEnterEditMode();
+          dashboard.setState({ editable: true, meta: { ...meta, canEdit: true } });
+        }}
+        tooltip="This dashboard was marked as read only"
+        key="edit"
+        className={styles.buttonWithExtraMargin}
+        variant="secondary"
+        size="sm"
+        data-testid={selectors.components.NavToolbar.editDashboard.editButton}
+      >
+        Make editable
+      </Button>
+    ),
+  });
+
+  toolbarActions.push({
+    group: 'new-share-dashboard-button',
+    condition: config.featureToggles.newDashboardSharingComponent && showShareButton,
+    render: () => <ShareButton key="new-share-dashboard-button" dashboard={dashboard} />,
   });
 
   toolbarActions.push({
@@ -353,6 +389,7 @@ export function ToolbarActions({ dashboard }: Props) {
         size="sm"
         key="settings"
         variant="secondary"
+        data-testid={selectors.components.NavToolbar.editDashboard.settingsButton}
       >
         Settings
       </Button>
@@ -370,6 +407,7 @@ export function ToolbarActions({ dashboard }: Props) {
         key="discard"
         fill="text"
         variant="primary"
+        data-testid={selectors.components.NavToolbar.editDashboard.exitButton}
       >
         Exit edit
       </Button>
@@ -384,9 +422,11 @@ export function ToolbarActions({ dashboard }: Props) {
         onClick={editPanel?.onDiscard}
         tooltip="Discard panel changes"
         size="sm"
+        disabled={!isEditedPanelDirty || !isDirty}
         key="discard"
         fill="outline"
         variant="destructive"
+        data-testid={selectors.components.NavToolbar.editDashboard.discardChangesButton}
       >
         Discard panel changes
       </Button>
@@ -404,6 +444,7 @@ export function ToolbarActions({ dashboard }: Props) {
         key="discardLibraryPanel"
         fill="outline"
         variant="destructive"
+        data-testid={selectors.components.NavToolbar.editDashboard.discardChangesButton}
       >
         Discard library panel changes
       </Button>
@@ -421,6 +462,7 @@ export function ToolbarActions({ dashboard }: Props) {
         key="unlinkLibraryPanel"
         fill="outline"
         variant="secondary"
+        data-testid={selectors.components.NavToolbar.editDashboard.unlinkLibraryPanelButton}
       >
         Unlink library panel
       </Button>
@@ -438,6 +480,7 @@ export function ToolbarActions({ dashboard }: Props) {
         key="saveLibraryPanel"
         fill="outline"
         variant="primary"
+        data-testid={selectors.components.NavToolbar.editDashboard.saveLibraryPanelButton}
       >
         Save library panel
       </Button>
@@ -461,6 +504,7 @@ export function ToolbarActions({ dashboard }: Props) {
             key="save"
             size="sm"
             variant={'primary'}
+            data-testid={selectors.components.NavToolbar.editDashboard.saveButton}
           >
             Save dashboard
           </Button>
@@ -517,6 +561,7 @@ export function ToolbarActions({ dashboard }: Props) {
             }}
             tooltip="Save changes"
             size="sm"
+            data-testid={selectors.components.NavToolbar.editDashboard.saveButton}
             variant={isDirty ? 'primary' : 'secondary'}
           >
             Save dashboard
@@ -591,6 +636,26 @@ function useEditingLibraryPanel(panelEditor?: PanelEditor) {
   }, [panelEditor]);
 
   return isEditingLibraryPanel;
+}
+
+// This hook handles when panelEditor is not defined to avoid conditionally hook usage
+function useVizManagerDirty(panelEditor?: PanelEditor) {
+  const [isDirty, setIsDirty] = useState<Boolean>(false);
+
+  useEffect(() => {
+    if (panelEditor) {
+      const unsub = panelEditor.state.vizManager.subscribeToState((vizManagerState) =>
+        setIsDirty(vizManagerState.isDirty || false)
+      );
+      return () => {
+        unsub.unsubscribe();
+      };
+    }
+    setIsDirty(false);
+    return;
+  }, [panelEditor]);
+
+  return isDirty;
 }
 
 interface ToolbarAction {

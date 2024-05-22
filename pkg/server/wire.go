@@ -21,6 +21,7 @@ import (
 	"github.com/grafana/grafana/pkg/infra/httpclient/httpclientprovider"
 	"github.com/grafana/grafana/pkg/infra/kvstore"
 	"github.com/grafana/grafana/pkg/infra/localcache"
+	"github.com/grafana/grafana/pkg/infra/log/slogadapter"
 	"github.com/grafana/grafana/pkg/infra/metrics"
 	"github.com/grafana/grafana/pkg/infra/remotecache"
 	"github.com/grafana/grafana/pkg/infra/serverlock"
@@ -350,6 +351,9 @@ var wireBasicSet = wire.NewSet(
 	secretsMigrations.ProvideMigrateFromPluginService,
 	secretsMigrations.ProvideSecretMigrationProvider,
 	wire.Bind(new(secretsMigrations.SecretMigrationProvider), new(*secretsMigrations.SecretMigrationProviderImpl)),
+	resourcepermissions.NewActionSetService,
+	wire.Bind(new(accesscontrol.ActionResolver), new(*resourcepermissions.InMemoryActionSets)),
+	wire.Bind(new(resourcepermissions.ActionSetService), new(*resourcepermissions.InMemoryActionSets)),
 	acimpl.ProvideAccessControl,
 	navtreeimpl.ProvideService,
 	wire.Bind(new(accesscontrol.AccessControl), new(*acimpl.AccessControl)),
@@ -368,6 +372,7 @@ var wireBasicSet = wire.NewSet(
 	anonstore.ProvideAnonDBStore,
 	wire.Bind(new(anonstore.AnonStore), new(*anonstore.AnonDBStore)),
 	loggermw.Provide,
+	slogadapter.Provide,
 	signingkeysimpl.ProvideEmbeddedSigningKeysService,
 	wire.Bind(new(signingkeys.Service), new(*signingkeysimpl.Service)),
 	ssoSettingsImpl.ProvideService,
@@ -380,7 +385,6 @@ var wireBasicSet = wire.NewSet(
 	// Kubernetes API server
 	grafanaapiserver.WireSet,
 	apiregistry.WireSet,
-	resourcepermissions.NewActionSetService,
 )
 
 var wireSet = wire.NewSet(
