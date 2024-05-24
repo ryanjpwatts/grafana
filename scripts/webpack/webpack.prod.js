@@ -6,10 +6,12 @@ const { EsbuildPlugin } = require('esbuild-loader');
 const { resolveToEsbuildTarget } = require('esbuild-plugin-browserslist');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
+const { EnvironmentPlugin } = require('webpack');
 const WebpackAssetsManifest = require('webpack-assets-manifest');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const { merge } = require('webpack-merge');
 
+const getEnvConfig = require('./env-util.js');
 const common = require('./webpack.common.js');
 const esbuildTargets = resolveToEsbuildTarget(browserslist(), { printUnknownTargets: false });
 
@@ -19,6 +21,8 @@ const esbuildOptions = {
   target: esbuildTargets,
   format: undefined,
 };
+
+const envConfig = getEnvConfig();
 
 module.exports = (env = {}) =>
   merge(common, {
@@ -86,5 +90,6 @@ module.exports = (env = {}) =>
           }
         });
       },
+      new EnvironmentPlugin(envConfig),
     ],
   });
