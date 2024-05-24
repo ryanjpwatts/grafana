@@ -1037,13 +1037,18 @@
     {
       "metadata": {
         "name": "enableNativeHTTPHistogram",
-        "resourceVersion": "1716448665531",
-        "creationTimestamp": "2024-05-23T07:17:45Z"
+        "resourceVersion": "1716582618081",
+        "creationTimestamp": "2024-05-23T07:17:45Z",
+        "annotations": {
+          "grafana.app/updatedTimestamp": "2024-05-24 20:30:18.081402 +0000 UTC"
+        }
       },
       "spec": {
         "description": "Enables native HTTP Histograms",
         "stage": "experimental",
-        "codeowner": "@grafana/hosted-grafana-team"
+        "codeowner": "@grafana/grafana-backend-services-squad",
+        "requiresRestart": true,
+        "hideFromAdminPage": true
       }
     },
     {
@@ -2249,6 +2254,23 @@
         "stage": "experimental",
         "codeowner": "@grafana/alerting-squad",
         "frontend": true
+      }
+    },
+    {
+      "metadata": {
+        "name": "disableClassicHTTPHistogram",
+        "resourceVersion": "1716577971462",
+        "creationTimestamp": "2024-05-24T18:34:05Z",
+        "annotations": {
+          "grafana.app/updatedTimestamp": "2024-05-24 19:12:51.462878 +0000 UTC"
+        }
+      },
+      "spec": {
+        "description": "Disables classic HTTP Histogram (use with enableNativeHTTPHistogram)",
+        "stage": "experimental",
+        "codeowner": "@grafana/grafana-backend-services-squad",
+        "requiresRestart": true,
+        "hideFromAdminPage": true
       }
     }
   ]
