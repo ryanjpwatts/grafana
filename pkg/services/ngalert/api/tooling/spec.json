@@ -4480,7 +4480,7 @@
       }
     },
     "EvalQueriesResponse": {
-      "$ref": "#/definitions/EvalQueriesResponse"
+      "type": "object"
     },
     "ExplorePanelsState": {
       "description": "This is an object constructed with the keys as the values of the enum VisType and the value being a bag of properties"
@@ -7972,15 +7972,14 @@
         "receiver": {
           "$ref": "#/definitions/receiver"
         }
-      },
-      "$ref": "#/definitions/alertGroup"
+      }
     },
     "alertGroups": {
       "type": "array",
       "items": {
+        "type": "object",
         "$ref": "#/definitions/alertGroup"
-      },
-      "$ref": "#/definitions/alertGroups"
+      }
     },
     "alertStatus": {
       "description": "AlertStatus alert status",
@@ -8081,7 +8080,6 @@
       }
     },
     "gettableAlert": {
-      "description": "GettableAlert gettable alert",
       "type": "object",
       "required": [
         "labels",
@@ -8092,58 +8090,14 @@
         "startsAt",
         "status",
         "updatedAt"
-      ],
-      "properties": {
-        "annotations": {
-          "$ref": "#/definitions/labelSet"
-        },
-        "endsAt": {
-          "description": "ends at",
-          "type": "string",
-          "format": "date-time"
-        },
-        "fingerprint": {
-          "description": "fingerprint",
-          "type": "string"
-        },
-        "generatorURL": {
-          "description": "generator URL\nFormat: uri",
-          "type": "string",
-          "format": "uri"
-        },
-        "labels": {
-          "$ref": "#/definitions/labelSet"
-        },
-        "receivers": {
-          "description": "receivers",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/receiver"
-          }
-        },
-        "startsAt": {
-          "description": "starts at",
-          "type": "string",
-          "format": "date-time"
-        },
-        "status": {
-          "$ref": "#/definitions/alertStatus"
-        },
-        "updatedAt": {
-          "description": "updated at",
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "$ref": "#/definitions/gettableAlert"
+      ]
     },
     "gettableAlerts": {
-      "description": "GettableAlerts gettable alerts",
       "type": "array",
       "items": {
+        "type": "object",
         "$ref": "#/definitions/gettableAlert"
-      },
-      "$ref": "#/definitions/gettableAlerts"
+      }
     },
     "gettableSilence": {
       "description": "GettableSilence gettable silence",
@@ -8192,46 +8146,22 @@
           "type": "string",
           "format": "date-time"
         }
-      },
-      "$ref": "#/definitions/gettableSilence"
+      }
     },
     "gettableSilences": {
+      "description": "GettableSilences gettable silences",
       "type": "array",
       "items": {
+        "type": "object",
         "$ref": "#/definitions/gettableSilence"
-      },
-      "$ref": "#/definitions/gettableSilences"
+      }
     },
     "integration": {
       "type": "object",
       "required": [
         "name",
         "sendResolved"
-      ],
-      "properties": {
-        "lastNotifyAttempt": {
-          "description": "A timestamp indicating the last attempt to deliver a notification regardless of the outcome.\nFormat: date-time",
-          "type": "string",
-          "format": "date-time"
-        },
-        "lastNotifyAttemptDuration": {
-          "description": "Duration of the last attempt to deliver a notification in humanized format (`1s` or `15ms`, etc).",
-          "type": "string"
-        },
-        "lastNotifyAttemptError": {
-          "description": "Error string for the last attempt to deliver a notification. Empty if the last attempt was successful.",
-          "type": "string"
-        },
-        "name": {
-          "description": "name",
-          "type": "string"
-        },
-        "sendResolved": {
-          "description": "send resolved",
-          "type": "boolean"
-        }
-      },
-      "$ref": "#/definitions/integration"
+      ]
     },
     "labelSet": {
       "description": "LabelSet label set",
@@ -8354,37 +8284,10 @@
         "endsAt",
         "matchers",
         "startsAt"
-      ],
-      "properties": {
-        "comment": {
-          "description": "comment",
-          "type": "string"
-        },
-        "createdBy": {
-          "description": "created by",
-          "type": "string"
-        },
-        "endsAt": {
-          "description": "ends at",
-          "type": "string",
-          "format": "date-time"
-        },
-        "id": {
-          "description": "id",
-          "type": "string"
-        },
-        "matchers": {
-          "$ref": "#/definitions/matchers"
-        },
-        "startsAt": {
-          "description": "starts at",
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "$ref": "#/definitions/postableSilence"
+      ]
     },
     "receiver": {
+      "description": "Receiver receiver",
       "type": "object",
       "required": [
         "active",
@@ -8407,8 +8310,7 @@
           "description": "name",
           "type": "string"
         }
-      },
-      "$ref": "#/definitions/receiver"
+      }
     },
     "silence": {
       "description": "Silence silence",
