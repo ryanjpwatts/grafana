@@ -540,7 +540,7 @@ func newAppDTO(plugin pluginstore.Plugin, settings pluginsettings.InfoDTO) *plug
 		Path:       plugin.Module,
 		Preload:    false,
 		Angular:    plugin.Angular,
-		Extensions: plugin.Generated.Extensions,
+		Extensions: plugin.Extensions,
 	}
 
 	if settings.Enabled {

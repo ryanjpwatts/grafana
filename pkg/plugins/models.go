@@ -52,10 +52,6 @@ type Extension struct {
 	Type             string `json:"type"`
 }
 
-type Generated struct {
-	Extensions []Extension `json:"extensions"`
-}
-
 type Includes struct {
 	Name       string       `json:"name"`
 	Path       string       `json:"path"`
