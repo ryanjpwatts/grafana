@@ -78,3 +78,10 @@ type FolderTitleUpdated struct {
 	UID       string    `json:"uid"`
 	OrgID     int64     `json:"org_id"`
 }
+
+type FolderMoved struct {
+	Timestamp    time.Time `json:"timestamp"`
+	UID          string    `json:"uid"`
+	NewParentUID string    `json:"new_parent_uid"`
+	OrgID        int64     `json:"org_id"`
+}

@@ -33,29 +33,58 @@ func Test_subscribeToFolderChanges(t *testing.T) {
 	rules := gen.With(gen.WithOrgID(orgID), gen.WithNamespace(folder)).GenerateManyRef(5)
 
 	bus := bus.ProvideBus(tracing.InitializeTracerForTest())
-	db := fakes.NewRuleStore(t)
-	db.Folders[orgID] = append(db.Folders[orgID], folder)
-	db.PutRule(context.Background(), rules...)
 
-	subscribeToFolderChanges(log.New("test"), bus, db)
+	t.Run("on folder title updated event versions of all rules should be increased", func(t *testing.T) {
+		db := fakes.NewRuleStore(t)
+		db.Folders[orgID] = append(db.Folders[orgID], folder)
+		db.PutRule(context.Background(), rules...)
 
-	err := bus.Publish(context.Background(), &events.FolderTitleUpdated{
-		Timestamp: time.Now(),
-		Title:     "Folder" + util.GenerateShortUID(),
-		UID:       folder.UID,
-		OrgID:     orgID,
+		subscribeToFolderChanges(log.New("test"), bus, db)
+
+		err := bus.Publish(context.Background(), &events.FolderTitleUpdated{
+			Timestamp: time.Now(),
+			Title:     "Folder" + util.GenerateShortUID(),
+			UID:       folder.UID,
+			OrgID:     orgID,
+		})
+		require.NoError(t, err)
+
+		require.Eventuallyf(t, func() bool {
+			return len(db.GetRecordedCommands(func(cmd any) (any, bool) {
+				c, ok := cmd.(fakes.GenericRecordedQuery)
+				if !ok || c.Name != "IncreaseVersionForAllRulesInNamespace" {
+					return nil, false
+				}
+				return c, true
+			})) > 0
+		}, time.Second, 10*time.Millisecond, "expected to call db store method but nothing was called")
 	})
-	require.NoError(t, err)
 
-	require.Eventuallyf(t, func() bool {
-		return len(db.GetRecordedCommands(func(cmd any) (any, bool) {
-			c, ok := cmd.(fakes.GenericRecordedQuery)
-			if !ok || c.Name != "IncreaseVersionForAllRulesInNamespace" {
-				return nil, false
-			}
-			return c, true
-		})) > 0
-	}, time.Second, 10*time.Millisecond, "expected to call db store method but nothing was called")
+	t.Run("on folder moved event versions of all rules should be increased", func(t *testing.T) {
+		db := fakes.NewRuleStore(t)
+		db.Folders[orgID] = append(db.Folders[orgID], folder)
+		db.PutRule(context.Background(), rules...)
+
+		subscribeToFolderChanges(log.New("test"), bus, db)
+
+		err := bus.Publish(context.Background(), &events.FolderMoved{
+			Timestamp:    time.Now(),
+			UID:          folder.UID,
+			NewParentUID: util.GenerateShortUID(),
+			OrgID:        orgID,
+		})
+		require.NoError(t, err)
+
+		require.Eventuallyf(t, func() bool {
+			return len(db.GetRecordedCommands(func(cmd any) (any, bool) {
+				c, ok := cmd.(fakes.GenericRecordedQuery)
+				if !ok || c.Name != "IncreaseVersionForAllRulesInNamespace" {
+					return nil, false
+				}
+				return c, true
+			})) > 0
+		}, time.Second, 10*time.Millisecond, "expected to call db store method but nothing was called")
+	})
 }
 
 func TestConfigureHistorianBackend(t *testing.T) {

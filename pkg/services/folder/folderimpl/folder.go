@@ -42,7 +42,7 @@ type Service struct {
 	dashboardFolderStore folder.FolderStore
 	features             featuremgmt.FeatureToggles
 	accessControl        accesscontrol.AccessControl
-	// bus is currently used to publish event in case of title change
+	// bus is currently used to publish event in case of title change or when a folder is moved
 	bus bus.Bus
 
 	mutex    sync.RWMutex
@@ -932,7 +932,8 @@ func (s *Service) Move(ctx context.Context, cmd *folder.MoveFolderCommand) (*fol
 			return folder.ErrInternal.Errorf("failed to move folder: %w", err)
 		}
 
-		if _, err := s.legacyUpdate(ctx, &folder.UpdateFolderCommand{
+		var dashFolder *folder.Folder
+		if dashFolder, err = s.legacyUpdate(ctx, &folder.UpdateFolderCommand{
 			UID:          cmd.UID,
 			OrgID:        cmd.OrgID,
 			NewParentUID: &newParentUID,
@@ -944,6 +945,16 @@ func (s *Service) Move(ctx context.Context, cmd *folder.MoveFolderCommand) (*fol
 				return folder.ErrConflict.Errorf("%w", dashboards.ErrFolderSameNameExists)
 			}
 			return folder.ErrInternal.Errorf("failed to move legacy folder: %w", err)
+		}
+
+		if err := s.bus.Publish(ctx, &events.FolderMoved{
+			Timestamp:    f.Updated,
+			UID:          dashFolder.UID,
+			NewParentUID: newParentUID,
+			OrgID:        cmd.OrgID,
+		}); err != nil {
+			s.log.ErrorContext(ctx, "failed to publish FolderMoved event", "folder", f.Title, "newParentUID", newParentUID, "error", err)
+			return err
 		}
 
 		return nil

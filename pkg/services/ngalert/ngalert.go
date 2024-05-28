@@ -403,13 +403,23 @@ func (ng *AlertNG) init() error {
 }
 
 func subscribeToFolderChanges(logger log.Logger, bus bus.Bus, dbStore api.RuleStore) {
-	// if folder title is changed, we update all alert rules in that folder to make sure that all peers (in HA mode) will update folder title and
+	// if folder title is changed or the folder is moved, we update all alert rules in that folder to make sure that all peers (in HA mode) will update folder title and
 	// clean up the current state
 	bus.AddEventListener(func(ctx context.Context, evt *events.FolderTitleUpdated) error {
 		logger.Info("Got folder title updated event. updating rules in the folder", "folderUID", evt.UID)
 		_, err := dbStore.IncreaseVersionForAllRulesInNamespace(ctx, evt.OrgID, evt.UID)
 		if err != nil {
 			logger.Error("Failed to update alert rules in the folder after its title was changed", "error", err, "folderUID", evt.UID, "folder", evt.Title)
+			return err
+		}
+		return nil
+	})
+
+	bus.AddEventListener(func(ctx context.Context, evt *events.FolderMoved) error {
+		logger.Info("Got folder moved event. updating rules in the folder", "folderUID", evt.UID)
+		_, err := dbStore.IncreaseVersionForAllRulesInNamespace(ctx, evt.OrgID, evt.UID)
+		if err != nil {
+			logger.Error("Failed to update alert rules in the folder after it was moved", "error", err, "folderUID", evt.UID)
 			return err
 		}
 		return nil
