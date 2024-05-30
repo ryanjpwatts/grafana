@@ -30,12 +30,12 @@ jobs:
         with:
           app_id: ${{ secrets.GRAFANA_DELIVERY_BOT_APP_ID }}
           private_key: ${{ secrets.GRAFANA_DELIVERY_BOT_APP_PEM }}
+      - name: Checkout Grafana
+        uses: actions/checkout@v4
       - name: Configure git user
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-      - name: Checkout Grafana
-        uses: actions/checkout@v4
       - name: Create branch
         run: git checkout -b "release/${{ github.run_id }}/${{ inputs.version }}"
       - name: Generate changelog
