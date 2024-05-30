@@ -1,6 +1,7 @@
 package dbimpl
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -31,6 +32,37 @@ func ProvideEntityDB(db db.DB, cfg *setting.Cfg, features featuremgmt.FeatureTog
 	}, nil
 }
 
+// NewFromConnString returns an entitydb.EntityDBInterface using the provided
+// database driver name and connection string. If always runs migrations first.
+// You are responsible for building the connection string appropriately, as well
+// as making sure the driver is registered in database/sql. This function is
+// meant to provide maximum flexibility, especially for integration tests and to
+// test the system against new databases.
+func NewFromConnString(ctx context.Context, driverName, connString string) (*EntityDB, error) {
+	// FIXME: get rid of xorm
+	engine, err := xorm.NewEngine(driverName, connString)
+	if err != nil {
+		return nil, fmt.Errorf("open database: %w", err)
+	}
+
+	if err = engine.DB().DB.PingContext(ctx); err != nil {
+		return nil, fmt.Errorf("ping database: %w", err)
+	}
+
+	// FIXME: use a different migrator that supports context.Context and is not
+	// so convoluted and tied to legacy code
+	cfg := setting.NewCfg()
+	err = migrations.MigrateEntityStore(engine, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("run migrations: %w", err)
+	}
+
+	return &EntityDB{
+		engine: engine,
+		cfg:    cfg,
+	}, nil
+}
+
 type EntityDB struct {
 	once    sync.Once
 	onceErr error
@@ -44,14 +76,17 @@ type EntityDB struct {
 }
 
 func (db *EntityDB) Init() error {
-	_, err := db.GetEngine()
-	return err
-}
-
-func (db *EntityDB) GetEngine() (*xorm.Engine, error) {
 	db.once.Do(func() {
 		db.onceErr = db.init()
 	})
+
+	return db.onceErr
+}
+
+func (db *EntityDB) GetEngine() (*xorm.Engine, error) {
+	if err := db.Init(); err != nil {
+		return nil, err
+	}
 
 	return db.engine, db.onceErr
 }
@@ -68,7 +103,7 @@ func (db *EntityDB) init() error {
 		DynamicSection: db.cfg.SectionWithEnvOverrides("entity_api"),
 	}
 
-	dbType := getter.Key("db_type").MustString("")
+	dbType := getter.String("db_type")
 
 	// if explicit connection settings are provided, use them
 	if dbType != "" {
@@ -129,9 +164,14 @@ func (db *EntityDB) init() error {
 
 	db.engine = engine
 
-	if err := migrations.MigrateEntityStore(engine, db.cfg, db.features); err != nil {
-		db.engine = nil
-		return fmt.Errorf("run migrations: %w", err)
+	// Skip if feature flag is not enabled
+	if db.features.IsEnabledGlobally(featuremgmt.FlagUnifiedStorage) {
+		// FIXME: use a different migrator that supports context.Context and is
+		// not so convoluted and tied to legacy code
+		if err := migrations.MigrateEntityStore(engine, db.cfg); err != nil {
+			db.engine = nil
+			return fmt.Errorf("run migrations: %w", err)
+		}
 	}
 
 	return nil
