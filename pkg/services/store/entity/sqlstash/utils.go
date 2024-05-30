@@ -15,11 +15,14 @@ import (
 )
 
 func createETag(body []byte, meta []byte, status []byte) string {
+	// TODO: can we change this to something more modern like 128bit FNV-1a?
+	// That's even in the Go standard library as (hash.fnv).New128a
 	h := md5.New()
 	_, _ = h.Write(meta)
 	_, _ = h.Write(body)
 	_, _ = h.Write(status)
 	hash := h.Sum(nil)
+
 	return hex.EncodeToString(hash[:])
 }
 
@@ -34,8 +37,7 @@ func getCurrentUser(ctx context.Context) (string, error) {
 	return store.GetUserIDString(user), nil
 }
 
-// ptrOr returns the first non-nil pointer in the least or a new non-nil
-// pointer.
+// ptrOr returns the first non-nil pointer in the list or a new non-nil pointer.
 func ptrOr[P ~*E, E any](ps ...P) P {
 	for _, p := range ps {
 		if p != nil {
@@ -46,8 +48,8 @@ func ptrOr[P ~*E, E any](ps ...P) P {
 	return P(new(E))
 }
 
-// sliceOr returns the first slice that has at least one element, or a non-nil
-// empty slice.
+// sliceOr returns the first slice that has at least one element, or a new empty
+// slice.
 func sliceOr[S ~[]E, E comparable](vals ...S) S {
 	for _, s := range vals {
 		if len(s) > 0 {
@@ -58,7 +60,7 @@ func sliceOr[S ~[]E, E comparable](vals ...S) S {
 	return S{}
 }
 
-// mapOr returns the first map that has at least one element, or a non-nil empty
+// mapOr returns the first map that has at least one element, or a new empty
 // map.
 func mapOr[M ~map[K]V, K comparable, V any](vals ...M) M {
 	for _, m := range vals {
