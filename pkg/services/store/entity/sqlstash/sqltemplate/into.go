@@ -19,6 +19,10 @@ func (i *ScanDest) Into(v reflect.Value, colName string) (string, error) {
 	return colName, nil
 }
 
+func (i *ScanDest) Reset() {
+	i.values = nil
+}
+
 func (i *ScanDest) GetScanDest() []any {
 	return i.values
 }

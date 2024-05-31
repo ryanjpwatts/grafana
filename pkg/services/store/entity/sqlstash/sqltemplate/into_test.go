@@ -35,4 +35,10 @@ func TestScanDest_Into(t *testing.T) {
 		t.Fatalf("unexpected outcome, got colname %q, err: %v, scan dest: %#v",
 			colName, err, d)
 	}
+
+	d.Reset()
+	v = d.GetScanDest()
+	if len(v) != 0 {
+		t.Fatalf("unexpected values after reset: %v", v)
+	}
 }
