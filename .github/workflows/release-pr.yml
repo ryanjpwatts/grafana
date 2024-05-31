@@ -51,12 +51,12 @@ jobs:
       - name: Create PR without backports
         if: "${{ github.event.inputs.backport == '' }}"
         run: >
-          gh pr create --dry-run=${{ inputs.dry_run }} -H "release/${{ inputs.version }}" -B "${{ inputs.target }}" --title "Release: ${{ inputs.version }}"
+          gh pr create --dry-run=${{ inputs.dry_run }} -H "release/${{ inputs.version }}" -B "${{ inputs.target }}" --title "Release: ${{ inputs.version }}" --body "These code changes must be merged after a release is complete"
         env:
           GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       - name: Create PR with backports
         if: "${{ github.event.inputs.backport != '' }}"
         run: >
-          gh pr create -l "backport-${{ inputs.backport }}" --dry-run=${{ inputs.dry_run }} -H "release/${{ inputs.version }}" -B "${{ inputs.target }}" --title "Release: ${{ inputs.version }}"
+          gh pr create -l "backport-${{ inputs.backport }}" --dry-run=${{ inputs.dry_run }} -H "release/${{ inputs.version }}" -B "${{ inputs.target }}" --title "Release: ${{ inputs.version }}" --body "These code changes must be merged after a release is complete"
         env:
           GH_TOKEN: ${{ steps.generate_token.outputs.token }}
