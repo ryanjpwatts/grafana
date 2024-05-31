@@ -85,28 +85,16 @@ func TestIntegrationPlaylist(t *testing.T) {
 		}))
 	})
 
-	// t.Run("with dual write mode 1 (file)", func(t *testing.T) {
-	// 	doPlaylistTests(t, apis.NewK8sTestHelper(t, testinfra.GrafanaOpts{
-	// 		AppModeProduction:    true,
-	// 		DisableAnonymous:     true,
-	// 		APIServerStorageType: "file", // write the files to disk
-	// 		EnableFeatureToggles: []string{
-	// 			featuremgmt.FlagKubernetesPlaylists, // Required so that legacy calls are also written
-	// 		},
-	// 	}))
-	// })
-
-	// t.Run("with dual write mode 1 (unified storage)", func(t *testing.T) {
-	// 	doPlaylistTests(t, apis.NewK8sTestHelper(t, testinfra.GrafanaOpts{
-	// 		AppModeProduction:    false, // required for  unified storage
-	// 		DisableAnonymous:     true,
-	// 		APIServerStorageType: "unified", // use the entity api tables
-	// 		EnableFeatureToggles: []string{
-	// 			featuremgmt.FlagUnifiedStorage,
-	// 			featuremgmt.FlagKubernetesPlaylists, // Required so that legacy calls are also written
-	// 		},
-	// 	}))
-	// })
+	t.Run("with dual write mode 1 (unified storage)", func(t *testing.T) {
+		doPlaylistTests(t, apis.NewK8sTestHelper(t, testinfra.GrafanaOpts{
+			AppModeProduction:    false, // required for  unified storage
+			DisableAnonymous:     true,
+			APIServerStorageType: "unified", // use the entity api tables
+			EnableFeatureToggles: []string{
+				featuremgmt.FlagUnifiedStorage,
+			},
+		}))
+	})
 
 	t.Run("with dual write mode1 (etcd)", func(t *testing.T) {
 		// NOTE: running local etcd, that will be wiped clean!
