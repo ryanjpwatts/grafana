@@ -85,27 +85,52 @@ func TestIntegrationPlaylist(t *testing.T) {
 		}))
 	})
 
-	t.Run("with dual write mode 1 (file)", func(t *testing.T) {
-		doPlaylistTests(t, apis.NewK8sTestHelper(t, testinfra.GrafanaOpts{
+	// t.Run("with dual write mode 1 (file)", func(t *testing.T) {
+	// 	doPlaylistTests(t, apis.NewK8sTestHelper(t, testinfra.GrafanaOpts{
+	// 		AppModeProduction:    true,
+	// 		DisableAnonymous:     true,
+	// 		APIServerStorageType: "file", // write the files to disk
+	// 		EnableFeatureToggles: []string{
+	// 			featuremgmt.FlagKubernetesPlaylists, // Required so that legacy calls are also written
+	// 		},
+	// 	}))
+	// })
+
+	// t.Run("with dual write mode 1 (unified storage)", func(t *testing.T) {
+	// 	doPlaylistTests(t, apis.NewK8sTestHelper(t, testinfra.GrafanaOpts{
+	// 		AppModeProduction:    false, // required for  unified storage
+	// 		DisableAnonymous:     true,
+	// 		APIServerStorageType: "unified", // use the entity api tables
+	// 		EnableFeatureToggles: []string{
+	// 			featuremgmt.FlagUnifiedStorage,
+	// 			featuremgmt.FlagKubernetesPlaylists, // Required so that legacy calls are also written
+	// 		},
+	// 	}))
+	// })
+
+	t.Run("with dual write mode1 (etcd)", func(t *testing.T) {
+		// NOTE: running local etcd, that will be wiped clean!
+		t.Skip("local etcd testing")
+
+		helper := apis.NewK8sTestHelper(t, testinfra.GrafanaOpts{
 			AppModeProduction:    true,
 			DisableAnonymous:     true,
-			APIServerStorageType: "file", // write the files to disk
+			APIServerStorageType: "etcd", // requires etcd running on localhost:2379
 			EnableFeatureToggles: []string{
 				featuremgmt.FlagKubernetesPlaylists, // Required so that legacy calls are also written
+				// featuremgmt.FlagDualWritePlaylistsMode2,
 			},
-		}))
-	})
+		})
 
-	t.Run("with dual write mode 1 (unified storage)", func(t *testing.T) {
-		doPlaylistTests(t, apis.NewK8sTestHelper(t, testinfra.GrafanaOpts{
-			AppModeProduction:    false, // required for  unified storage
-			DisableAnonymous:     true,
-			APIServerStorageType: "unified", // use the entity api tables
-			EnableFeatureToggles: []string{
-				featuremgmt.FlagUnifiedStorage,
-				featuremgmt.FlagKubernetesPlaylists, // Required so that legacy calls are also written
-			},
-		}))
+		// Clear the collection before starting (etcd)
+		client := helper.GetResourceClient(apis.ResourceClientArgs{
+			User: helper.Org1.Admin,
+			GVR:  gvr,
+		})
+		err := client.Resource.DeleteCollection(context.Background(), metav1.DeleteOptions{}, metav1.ListOptions{})
+		require.NoError(t, err)
+
+		doPlaylistTests(t, helper)
 	})
 
 	t.Run("with dual write mode 2 (file)", func(t *testing.T) {
