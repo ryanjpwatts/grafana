@@ -1,3 +1,9 @@
+# This workflow creates a new PR in Grafana which is triggered after a release is completed.
+# It should include all code changes that are needed after a release is done. This includes the changelog update and
+# version bumps, but could include more in the future.
+# Please refrain from including any processes that do not result in code changes in this workflow. Instead, they should
+# either be triggered in the release promotion process or in the release comms process (that is triggered by merging
+# this PR).
 name: Complete a Grafana release
 on:
   workflow_dispatch:
